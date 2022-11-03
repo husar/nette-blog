@@ -73,8 +73,9 @@ final class EmployeePresenter extends Nette\Application\UI\Presenter
             ->setType('date')->setRequired()->setHtmlAttribute('class','form-control');
 
         $form->addSubmit('send', 'Upraviť záznam')->setHtmlAttribute('class','btn blue');
+        $form->addHidden('id','id');
 
-        $form->onSuccess[] = [$this, 'addPersonFormSucceeded'];
+        $form->onSuccess[] = [$this, 'editPersonFormSucceeded'];
 
         return $form;
     }
@@ -96,10 +97,34 @@ final class EmployeePresenter extends Nette\Application\UI\Presenter
         $this->redirect('this');
     }
 
+    public function editPersonFormSucceeded(\stdClass $data): void
+    {
+
+        $this->xmlWorker->delete($data->id);
+        $this->xmlWorker->appendXmlFile($this->folderName.'/'.$this->xmlName, $data);
+
+        $this->flashMessage('Záznam bol upravený', 'success');
+        $this->redirect('Employee:showAllEmployees');
+    }
+
     public function renderShowAllEmployees()
 	{
 		$this->template->employees = $this->employee->getAllDataFromEmployeeList();
+        $this->template->addFunction('getSexInSlovak', function ($sex) {
+            return $this->employee->getSexInSlovak($sex);
+        });
+        $this->template->addFunction('getDMYDateFormat', function ($date) {
+            return $this->employee->getDMYDateFormat($date);
+        });
 	}
+
+    public function renderageGraph()
+	{
+		$this->template->employeesNames = $this->employee->getAllNames();
+        $this->template->employeesAges  = $this->employee->getAllAges();
+
+	}
+
     public function actionDelete($id)
 	{
 		$this->xmlWorker->delete($id);
@@ -109,17 +134,14 @@ final class EmployeePresenter extends Nette\Application\UI\Presenter
         
 	}
     public function actionEdit(int $id) {
-        //$recipe = recipe_obtaining_magic($id);
         $employee = $this->xmlWorker->getDataForEdit($id);
         $editPersonForm = $this['editPersonForm'];
         $editPersonForm->setDefaults([
             'name' => $employee[0]->Name,
             'sex' => $employee[0]->Sex,
             'dateOfBirth' => $employee[0]->DateOfBirth,
+            'id'    => $id,
         ]);
-        $editPersonForm->onSuccess[] = function($form, $data) use ($id) {
-            recipe_updating_magic($id, $data);
-        };
     }
 
     public function renderEdit($id)

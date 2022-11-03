@@ -28,8 +28,8 @@
                     <tbody n:if="(isset($employees))">
                     <tr  n:foreach="$employees as $employee">
                         <td>{$employee->Name}</td>
-                        <td>{$employee->Sex == 'man'?'muž':'žena'}</td>
-                        <td>{date("d.m.Y", strtotime($employee->DateOfBirth))}</td>
+                        <td>{getSexInSlovak($employee->Sex)}</td>
+                        <td>{getDMYDateFormat($employee->DateOfBirth)}</td>
                         <td>
                             <a n:href="delete, (int)$employee[0]['employee_id']" type="button" class="btn red" title="Zmazať záznam" name="forDelete" onclick="return confirm('Naozaj chcete odstrániť túto osobu?')">Odstrániť</a>
                             <a n:href="edit, (int)$employee[0]['employee_id']" class="btn blue" type="button" title="Upraviť záznam">Upraviť</a>

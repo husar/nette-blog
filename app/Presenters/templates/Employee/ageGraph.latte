@@ -1,0 +1,49 @@
+
+{block content}
+<div class="page-content">
+<div n:foreach="$flashes as $flash" n:class="flash, $flash->type">
+	{$flash->message}
+</div>
+
+                                      
+                                       <div id="top_x_div" style="width: auto; height: 500px;"></div>
+
+
+ <script type="text/javascript">
+      google.charts.load('current', {'packages':['bar']});
+      google.charts.setOnLoadCallback(drawStuff);
+
+      function drawStuff() {
+        var names={$employeesNames}
+        var ages={$employeesAges}
+        var dataForGraph = [['Move', 'Percentage']]
+        arrayIndex=0;
+        while(arrayIndex<names.length){
+            var helpArray = []
+            helpArray.push(names[arrayIndex][0])
+            helpArray.push(ages[arrayIndex])
+            dataForGraph.push(helpArray)
+            arrayIndex++
+        }
+        console.log(dataForGraph)
+        var data = new google.visualization.arrayToDataTable(dataForGraph);
+
+        var options = {
+          width: 800,
+          legend: { position: 'none' },
+          chart: {
+            title: 'Chess opening moves',
+            subtitle: 'popularity by percentage' },
+          axes: {
+            x: {
+              0: { side: 'top', label: 'White to move'} // Top x-axis.
+            }
+          },
+          bar: { groupWidth: "90%" }
+        };
+
+        var chart = new google.charts.Bar(document.getElementById('top_x_div'));
+        // Convert the Classic options to Material options.
+        chart.draw(data, google.charts.Bar.convertOptions(options));
+      };
+    </script>
