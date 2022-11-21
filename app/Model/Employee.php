@@ -2,34 +2,23 @@
 namespace App\Model;
 
 use Nette;
+use App\Constants\Constants;
+use App\Model\XmlWorker;
 
 final class Employee
 {
 	use Nette\SmartObject;
 
-    private $xml;
-
-    public function __construct()
-	{
-		if(file_exists('Employees/employees_list.xml')){
-            $this->xml = simplexml_load_file('Employees/employees_list.xml');
-        }
-	}
-
-    public static function getAllDataFromEmployeeList(){
-        $xml=NULL;
-        if(file_exists('Employees/employees_list.xml')){
-            $xml=simplexml_load_file('Employees/employees_list.xml');
-        }
-        return $xml;
+    public function __construct(private XmlWorker $xml) {
     }
 
-    public static function getAllNames(){
-        $xml=NULL;
+    public function getAllDataFromEmployeeList(){
+        return $this->xml->getAllEmployeesData();
+    }
+
+    public function getAllNames(){
+        $xml=$this->xml->getAllEmployeesData();
         $names=array();
-        if(file_exists('Employees/employees_list.xml')){
-            $xml=simplexml_load_file('Employees/employees_list.xml');
-        }
         if($xml){
             foreach($xml as $employeeData){
                 array_push($names, $employeeData->Name);
@@ -38,12 +27,9 @@ final class Employee
         return $names;
     }
 
-    public static function getAllAges(){
-        $xml=NULL;
+    public function getAllAges(){
+        $xml=$this->xml->getAllEmployeesData();
         $ages=array();
-        if(file_exists('Employees/employees_list.xml')){
-            $xml=simplexml_load_file('Employees/employees_list.xml');
-        }
         if($xml){
             foreach($xml as $employeeData){
                 $birthDate=new \DateTime($employeeData->DateOfBirth);

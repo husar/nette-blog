@@ -2,6 +2,7 @@
 namespace App\Model;
 
 use Nette;
+use App\Constants\Constants;
 
 final class XmlWorker
 {
@@ -19,10 +20,10 @@ final class XmlWorker
         $dom->xmlVersion = '1.0';
         $dom->formatOutput = true;
 
-        $root = $dom->createElement('Employees');
+        $root = $dom->createElement(Constants::MAIN_XML_ELEMENT);
 
-        $employeeNode = $dom->createElement('employee');
-        $attr_employee_id = new \DOMAttr('employee_id', 1);
+        $employeeNode = $dom->createElement(Constants::EMPLOYEE_XML_ELEMENT);
+        $attr_employee_id = new \DOMAttr(Constants::EMPLOYEE_ID_XML_ELEMENT, 1);
         $employeeNode->setAttributeNode($attr_employee_id);
 
         $dataId=0;
@@ -47,10 +48,10 @@ final class XmlWorker
 
 		$dom = new \DOMDocument();
         $dom->load($path);
-        $root = $dom->getElementsByTagName('Employees')->item(0);
+        $root = $dom->getElementsByTagName(Constants::MAIN_XML_ELEMENT)->item(0);
 
-        $employeeNode = $dom->createElement('employee');
-        $attr_employee_id = new \DOMAttr('employee_id',$this->getLastEmployeeId($path));
+        $employeeNode = $dom->createElement(Constants::EMPLOYEE_XML_ELEMENT);
+        $attr_employee_id = new \DOMAttr(Constants::EMPLOYEE_ID_XML_ELEMENT,$this->getLastEmployeeId($path));
         $employeeNode->setAttributeNode($attr_employee_id);
 
         $dataId=0;
@@ -71,23 +72,31 @@ final class XmlWorker
 
     private function getLastEmployeeId($path){
         $xml=simplexml_load_file($path) or die("Error: Cannot create object");
-        return $xml->employee[$xml->count()-1]['employee_id']+1;
+        return $xml->employee[$xml->count()-1][Constants::EMPLOYEE_ID_XML_ELEMENT]+1;
     }
 
     public function delete($id){
         $dom = new \DOMDocument();
-        $dom->load('Employees/employees_list.xml');
+        $dom->load(Constants::XML_FOLDER_NAME.'/'.Constants::XML_FILE_NAME);
         $xpath = new \DomXPath($dom);
-        $toDelete = $xpath->query('//*[@employee_id="' . $id . '"]');
+        $toDelete = $xpath->query('//*[@'.Constants::EMPLOYEE_ID_XML_ELEMENT.'="' . $id . '"]');
         foreach ($toDelete as $item) {
             $item->remove();
         }
         $xml = new \SimpleXMLElement($dom->saveXml());
-        $xml->asXML('Employees/employees_list.xml');
+        $xml->asXML(Constants::XML_FOLDER_NAME.'/'.Constants::XML_FILE_NAME);
     }
     
     public function getDataForedit($id){
-        $xml = simplexml_load_file('Employees/employees_list.xml');
-        return $xml->xpath('//*[@employee_id="' . $id . '"]');
+        $xml = simplexml_load_file(Constants::XML_FOLDER_NAME.'/'.Constants::XML_FILE_NAME);
+        return $xml->xpath('//*[@'.Constants::EMPLOYEE_ID_XML_ELEMENT.'="' . $id . '"]');
+    }
+
+    public function getAllEmployeesData(){
+        $xml=NULL;
+        if(file_exists(Constants::XML_FOLDER_NAME.'/'.Constants::XML_FILE_NAME)){
+            $xml=simplexml_load_file(Constants::XML_FOLDER_NAME.'/'.Constants::XML_FILE_NAME);
+        }
+        return $xml;
     }
 }

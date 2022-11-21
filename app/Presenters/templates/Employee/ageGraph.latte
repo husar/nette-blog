@@ -1,9 +1,6 @@
 
 {block content}
 <div class="page-content">
-<div n:foreach="$flashes as $flash" n:class="flash, $flash->type">
-	{$flash->message}
-</div>
 
                                       
                                        <div id="top_x_div" style="width: auto; height: 500px;"></div>
@@ -16,7 +13,7 @@
       function drawStuff() {
         var names={$employeesNames}
         var ages={$employeesAges}
-        var dataForGraph = [['Move', 'Percentage']]
+        var dataForGraph = [['Meno', 'Vek']]
         arrayIndex=0;
         while(arrayIndex<names.length){
             var helpArray = []
@@ -29,14 +26,13 @@
         var data = new google.visualization.arrayToDataTable(dataForGraph);
 
         var options = {
-          width: 800,
+          width: 1300,
           legend: { position: 'none' },
           chart: {
-            title: 'Chess opening moves',
-            subtitle: 'popularity by percentage' },
+            title: 'Grafické zobrazenie veku zamestnancov' },
           axes: {
             x: {
-              0: { side: 'top', label: 'White to move'} // Top x-axis.
+              0: { side: 'top'} // Top x-axis.
             }
           },
           bar: { groupWidth: "90%" }

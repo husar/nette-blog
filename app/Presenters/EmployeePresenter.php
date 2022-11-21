@@ -9,13 +9,12 @@ use Nette\Utils\FileSystem;
 
 use App\Model\XmlWorker;
 use App\Model\Employee;
+use App\Constants\Constants;
 
 final class EmployeePresenter extends Nette\Application\UI\Presenter
 {
     private XmlWorker $xmlWorker;
     private Employee $employee;
-    private $folderName = 'Employees';
-    private $xmlName = 'employees_list.xml';
 
     public function __construct(XmlWorker $xmlWorker, Employee $employee)
 	{
@@ -25,7 +24,6 @@ final class EmployeePresenter extends Nette\Application\UI\Presenter
 
 	protected function createComponentAddPersonForm(): Form
     {
-
 
         $form = new Form; // means Nette\Application\UI\Form
 
@@ -83,14 +81,14 @@ final class EmployeePresenter extends Nette\Application\UI\Presenter
     public function addPersonFormSucceeded(\stdClass $data): void
     {
 
-        FileSystem::createDir($this->folderName);
+        FileSystem::createDir(Constants::XML_FOLDER_NAME);
 
-        if(!file_exists($this->folderName.'/'.$this->xmlName)){
+        if(!file_exists(Constants::XML_FOLDER_NAME.'/'.Constants::XML_FILE_NAME)){
 
-            $this->xmlWorker->createXmlFile($this->folderName.'/'.$this->xmlName, $data);
+            $this->xmlWorker->createXmlFile(Constants::XML_FOLDER_NAME.'/'.Constants::XML_FILE_NAME, $data);
 
         }else{
-            $this->xmlWorker->appendXmlFile($this->folderName.'/'.$this->xmlName, $data);
+            $this->xmlWorker->appendXmlFile(Constants::XML_FOLDER_NAME.'/'.Constants::XML_FILE_NAME, $data);
         }
 
         $this->flashMessage('Zamestnanec bol úspešne pridaný', 'success');
@@ -101,7 +99,7 @@ final class EmployeePresenter extends Nette\Application\UI\Presenter
     {
 
         $this->xmlWorker->delete($data->id);
-        $this->xmlWorker->appendXmlFile($this->folderName.'/'.$this->xmlName, $data);
+        $this->xmlWorker->appendXmlFile(Constants::XML_FOLDER_NAME.'/'.Constants::XML_FILE_NAME, $data);
 
         $this->flashMessage('Záznam bol upravený', 'success');
         $this->redirect('Employee:showAllEmployees');
