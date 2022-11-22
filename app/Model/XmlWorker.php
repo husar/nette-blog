@@ -3,99 +3,96 @@ namespace App\Model;
 
 use Nette;
 use App\Constants\Constants;
+use Nette\Utils\FileSystem;
 
 final class XmlWorker
 {
 	use Nette\SmartObject;
 
-    private $xmlChildNames=['Name','Sex','DateOfBirth'];
-    private $data;
-
-	public function createXmlFile($path, $data)
+	public function createXmlFile($dbName, $tableName, $columnNames, $data, $mainElement=NULL, $firstElement=NULL, $idElement=NULL)
 	{
-        $this->data = [$data->name, $data->sex, $data->dateOfBirth];
+        FileSystem::createDir($dbName);
+
+		 $dom = new \DOMDocument();
+         $dom->encoding = 'utf-8';
+         $dom->xmlVersion = '1.0';
+         $dom->formatOutput = true;
+
+         $root = $dom->createElement($mainElement);
+
+         $firstNode = $dom->createElement($firstElement);
+         $attrId = new \DOMAttr($idElement, 1);
+         $firstNode->setAttributeNode($attrId);
+
+         $dataId=0;
+
+         foreach($columnNames as $childName){
+
+             $childNode = $dom->createElement($childName, $data[$dataId]);
+             $firstNode->appendChild($childNode);
+
+             $dataId++;
+         }
+
+         $root->appendChild($firstNode);
+         $dom->appendChild($root);
+
+         $dom->save($dbName.'/'.$tableName);
+	}
+
+    public function appendXmlFile($dbName, $tableName, $columnNames, $data, $mainElement=NULL, $firstElement=NULL, $idElement=NULL)
+	{
 
 		$dom = new \DOMDocument();
-        $dom->encoding = 'utf-8';
-        $dom->xmlVersion = '1.0';
-        $dom->formatOutput = true;
+        $dom->load($dbName.'/'.$tableName);
+        $root = $dom->getElementsByTagName($mainElement)->item(0);
 
-        $root = $dom->createElement(Constants::MAIN_XML_ELEMENT);
-
-        $employeeNode = $dom->createElement(Constants::EMPLOYEE_XML_ELEMENT);
-        $attr_employee_id = new \DOMAttr(Constants::EMPLOYEE_ID_XML_ELEMENT, 1);
-        $employeeNode->setAttributeNode($attr_employee_id);
+        $firstNode = $dom->createElement($firstElement);
+        $attrId = new \DOMAttr($idElement,$this->getLastId($dbName.'/'.$tableName, $idElement));
+        $firstNode->setAttributeNode($attrId);
 
         $dataId=0;
 
-        foreach($this->xmlChildNames as $childName){
+        foreach($columnNames as $childName){
 
-            $child_node = $dom->createElement($childName, $this->data[$dataId]);
-            $employeeNode->appendChild($child_node);
+            $childNode = $dom->createElement($childName, $data[$dataId]);
+            $firstNode->appendChild($childNode);
 
             $dataId++;
         }
 
-        $root->appendChild($employeeNode);
+        $root->appendChild($firstNode);
         $dom->appendChild($root);
 
-        $dom->save($path);
+        $dom->save($dbName.'/'.$tableName);
 	}
 
-    public function appendXmlFile($path, $data)
-	{
-        $this->data = [$data->name, $data->sex, $data->dateOfBirth];
-
-		$dom = new \DOMDocument();
-        $dom->load($path);
-        $root = $dom->getElementsByTagName(Constants::MAIN_XML_ELEMENT)->item(0);
-
-        $employeeNode = $dom->createElement(Constants::EMPLOYEE_XML_ELEMENT);
-        $attr_employee_id = new \DOMAttr(Constants::EMPLOYEE_ID_XML_ELEMENT,$this->getLastEmployeeId($path));
-        $employeeNode->setAttributeNode($attr_employee_id);
-
-        $dataId=0;
-
-        foreach($this->xmlChildNames as $childName){
-
-            $child_node = $dom->createElement($childName, $this->data[$dataId]);
-            $employeeNode->appendChild($child_node);
-
-            $dataId++;
-        }
-
-        $root->appendChild($employeeNode);
-        $dom->appendChild($root);
-
-        $dom->save($path);
-	}
-
-    private function getLastEmployeeId($path){
+    private function getLastId($path, $idElement){
         $xml=simplexml_load_file($path) or die("Error: Cannot create object");
-        return $xml->employee[$xml->count()-1][Constants::EMPLOYEE_ID_XML_ELEMENT]+1;
+        return $xml->employee[$xml->count()-1][$idElement]+1;
     }
 
-    public function delete($id){
+    public function delete($dbName, $tableName, $columnName, $id){
         $dom = new \DOMDocument();
-        $dom->load(Constants::XML_FOLDER_NAME.'/'.Constants::XML_FILE_NAME);
+        $dom->load($dbName.'/'.$tableName);
         $xpath = new \DomXPath($dom);
-        $toDelete = $xpath->query('//*[@'.Constants::EMPLOYEE_ID_XML_ELEMENT.'="' . $id . '"]');
+        $toDelete = $xpath->query('//*[@'.$columnName.'="' . $id . '"]');
         foreach ($toDelete as $item) {
             $item->remove();
         }
         $xml = new \SimpleXMLElement($dom->saveXml());
-        $xml->asXML(Constants::XML_FOLDER_NAME.'/'.Constants::XML_FILE_NAME);
+        $xml->asXML($dbName.'/'.$tableName);
     }
     
-    public function getDataForedit($id){
-        $xml = simplexml_load_file(Constants::XML_FOLDER_NAME.'/'.Constants::XML_FILE_NAME);
-        return $xml->xpath('//*[@'.Constants::EMPLOYEE_ID_XML_ELEMENT.'="' . $id . '"]');
+    public function getOneRecordData($dbName, $tableName, $idElement, $id){
+        $xml = simplexml_load_file($dbName.'/'.$tableName);
+        return $xml->xpath('//*[@'.$idElement.'="' . $id . '"]');
     }
 
-    public function getAllEmployeesData(){
+    public function getAllData($dbName, $tableName){
         $xml=NULL;
-        if(file_exists(Constants::XML_FOLDER_NAME.'/'.Constants::XML_FILE_NAME)){
-            $xml=simplexml_load_file(Constants::XML_FOLDER_NAME.'/'.Constants::XML_FILE_NAME);
+        if(file_exists($dbName.'/'.$tableName)){
+            $xml=simplexml_load_file($dbName.'/'.$tableName);
         }
         return $xml;
     }

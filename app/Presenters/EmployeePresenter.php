@@ -5,20 +5,16 @@ namespace App\Presenters;
 use Nette;
 
 use Nette\Application\UI\Form;
-use Nette\Utils\FileSystem;
 
-use App\Model\XmlWorker;
 use App\Model\Employee;
 use App\Constants\Constants;
 
 final class EmployeePresenter extends Nette\Application\UI\Presenter
 {
-    private XmlWorker $xmlWorker;
     private Employee $employee;
 
-    public function __construct(XmlWorker $xmlWorker, Employee $employee)
+    public function __construct( Employee $employee)
 	{
-		$this->xmlWorker    = $xmlWorker;
         $this->employee     = $employee;
 	}
 
@@ -81,15 +77,7 @@ final class EmployeePresenter extends Nette\Application\UI\Presenter
     public function addPersonFormSucceeded(\stdClass $data): void
     {
 
-        FileSystem::createDir(Constants::XML_FOLDER_NAME);
-
-        if(!file_exists(Constants::XML_FOLDER_NAME.'/'.Constants::XML_FILE_NAME)){
-
-            $this->xmlWorker->createXmlFile(Constants::XML_FOLDER_NAME.'/'.Constants::XML_FILE_NAME, $data);
-
-        }else{
-            $this->xmlWorker->appendXmlFile(Constants::XML_FOLDER_NAME.'/'.Constants::XML_FILE_NAME, $data);
-        }
+        $this->employee->addEmployee($data);
 
         $this->flashMessage('Zamestnanec bol úspešne pridaný', 'success');
         $this->redirect('this');
@@ -98,8 +86,8 @@ final class EmployeePresenter extends Nette\Application\UI\Presenter
     public function editPersonFormSucceeded(\stdClass $data): void
     {
 
-        $this->xmlWorker->delete($data->id);
-        $this->xmlWorker->appendXmlFile(Constants::XML_FOLDER_NAME.'/'.Constants::XML_FILE_NAME, $data);
+        $this->employee->deleteEmployee($data->id);
+        $this->employee->addEmployee($data);
 
         $this->flashMessage('Záznam bol upravený', 'success');
         $this->redirect('Employee:showAllEmployees');
@@ -118,21 +106,21 @@ final class EmployeePresenter extends Nette\Application\UI\Presenter
 
     public function renderageGraph()
 	{
-		$this->template->employeesNames = $this->employee->getAllNames();
-        $this->template->employeesAges  = $this->employee->getAllAges();
+		$this->template->employeesNames = $this->employee->getAllEmployeeNames();
+        $this->template->employeesAges  = $this->employee->getAllEmployeesAges();
 
 	}
 
     public function actionDelete($id)
 	{
-		$this->xmlWorker->delete($id);
+		$this->employee->deleteEmployee($id);
 
         $this->flashMessage('Zamestnanec bol úspešne odstránený', 'success');
         $this->redirect('Employee:showAllEmployees');
         
 	}
     public function actionEdit(int $id) {
-        $employee = $this->xmlWorker->getDataForEdit($id);
+        $employee = $this->employee->getEmployeeData($id);
         $editPersonForm = $this['editPersonForm'];
         $editPersonForm->setDefaults([
             'name' => $employee[0]->Name,
@@ -144,6 +132,6 @@ final class EmployeePresenter extends Nette\Application\UI\Presenter
 
     public function renderEdit($id)
 	{
-		$this->template->employee = $this->xmlWorker->getDataForEdit($id);
+		$this->template->employee = $this->employee->getEmployeeData($id);
 	}
 }

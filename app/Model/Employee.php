@@ -12,12 +12,35 @@ final class Employee
     public function __construct(private XmlWorker $xml) {
     }
 
-    public function getAllDataFromEmployeeList(){
-        return $this->xml->getAllEmployeesData();
+    public function addEmployee($data){
+        $columnNames=['Name','Sex','DateOfBirth'];
+        $data=[$data->name, $data->sex, $data->dateOfBirth];
+
+        if(!file_exists(Constants::XML_FOLDER_NAME.'/'.Constants::XML_FILE_NAME)){
+
+            $this->xml->createXmlFile(Constants::XML_FOLDER_NAME, Constants::XML_FILE_NAME, $columnNames, $data, 'Employees', 'employee', 'employee_id');
+    
+        }else{
+
+            $this->xml->appendXmlFile(Constants::XML_FOLDER_NAME, Constants::XML_FILE_NAME, $columnNames, $data, 'Employees', 'employee', 'employee_id');
+
+        }
     }
 
-    public function getAllNames(){
-        $xml=$this->xml->getAllEmployeesData();
+    public function deleteEmployee($id){
+
+        $this->xml->delete(Constants::XML_FOLDER_NAME, Constants::XML_FILE_NAME, 'employee_id', $id);
+
+    }
+
+    public function getAllDataFromEmployeeList(){
+
+        return $this->xml->getAllData(Constants::XML_FOLDER_NAME, Constants::XML_FILE_NAME);
+
+    }
+
+    public function getAllEmployeeNames(){
+        $xml=$this->xml->getAllData(Constants::XML_FOLDER_NAME, Constants::XML_FILE_NAME);
         $names=array();
         if($xml){
             foreach($xml as $employeeData){
@@ -27,8 +50,8 @@ final class Employee
         return $names;
     }
 
-    public function getAllAges(){
-        $xml=$this->xml->getAllEmployeesData();
+    public function getAllEmployeesAges(){
+        $xml=$this->xml->getAllData(Constants::XML_FOLDER_NAME, Constants::XML_FILE_NAME);
         $ages=array();
         if($xml){
             foreach($xml as $employeeData){
@@ -45,5 +68,9 @@ final class Employee
     }
     public function getDMYDateFormat($date){
         return date("d.m.Y", strtotime($date));
+    }
+
+    public function getEmployeeData($id){
+        return $this->xml->getOneRecordData(Constants::XML_FOLDER_NAME, Constants::XML_FILE_NAME, 'employee_id', $id);
     }
 }

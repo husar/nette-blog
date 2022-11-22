@@ -1,7 +1,9 @@
 {block content}
 <div class="page-content">
 <div n:foreach="$flashes as $flash" n:class="flash, $flash->type">
-	{$flash->message}
+	<div class="alert alert-success"> 
+        {$flash->message}
+    </div>
 </div>
  <div class="portlet box blue">
     <div class="portlet-title">

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Employees>
+  <employee employee_id="1">
+    <Name>Ján Štucka</Name>
+    <Sex>man</Sex>
+    <DateOfBirth>1995-11-16</DateOfBirth>
+  </employee>
+<employee employee_id="2"><Name>Lenka</Name><Sex>woman</Sex><DateOfBirth>2002-05-08</DateOfBirth></employee><employee employee_id="3"><Name>test</Name><Sex>man</Sex><DateOfBirth>1969-01-26</DateOfBirth></employee></Employees>
